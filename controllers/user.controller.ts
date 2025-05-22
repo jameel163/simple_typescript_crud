@@ -1,26 +1,62 @@
-import { Request, Response } from 'express';
-import { User } from '../models/user';
+import { Request, Response } from "express";
+import { User } from "../models/user";
+import {
+  AllUser,
+  CreateUserRequest,
+  CreateUserResponse,
+  UpdateUserRequest,
+  UpdateUserResponse,
+  DeleteUserResponse,
+} from "../interfaces/user.interface";
 
+// get all users
 export const getAllUsers = async (req: Request, res: Response) => {
-  const users = await User.findAll();
+  const users: AllUser[] = await User.findAll();
   res.json(users);
 };
 
-export const createUser = async (req: Request, res: Response) => {
-  const { name, email } = req.body;
-  const user = await User.create({ name, email });
+// create user
+export const createUser = async ( req: Request, res: Response ) => {
+  const data: CreateUserRequest = req.body;
+  const {name,email}=data
+  const user: CreateUserResponse = await User.create(data);
   res.json(user);
 };
 
-export const updateUser = async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { name, email } = req.body;
-  const user = await User.update({ name, email }, { where: { id } });
-  res.json(user);
+// upd user
+export const updateUser = async (
+  req: Request,
+  res: Response
+) => {
+
+  const {id}= req.params;
+  const body:UpdateUserRequest= req.body;
+  const{name,email}=body
+  const [updatedCount] = await User.update({ name,email  }, { where: { id } });
+
+  const response: UpdateUserResponse = {
+    success: updatedCount > 0,
+    message:
+      updatedCount > 0
+        ? "User updated successfully"
+        : "No user found",
+  };
+
+  res.json(response);
 };
 
-export const deleteUser = async (req: Request, res: Response) => {
+// del user
+export const deleteUser = async (
+  req: Request,
+  res: Response
+) => {
   const { id } = req.params;
-  await User.destroy({ where: { id } });
-  res.json({ message: 'User deleted' });
+  const deletedCount = await User.destroy({ where: { id } });
+
+  const response: DeleteUserResponse = {
+    message: deletedCount > 0 ? "User deleted" : "User not found",
+    deleted: deletedCount > 0,
+  };
+
+  res.json(response);
 };
